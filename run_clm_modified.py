@@ -226,7 +226,10 @@ def main():
             "You are instantiating a new tokenizer from scratch. This is not supported by this script."
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
-
+    
+    special_tokens_dict = {'eos_token': '<EOTR>', 'pad_token': '<PAD>'}
+    tokenizer.add_special_tokens(special_tokens_dict)
+    
     if model_args.model_name_or_path:
         model = AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
@@ -238,8 +241,6 @@ def main():
         logger.info("Training new model from scratch")
         model = AutoModelForCausalLM.from_config(config)
 
-    special_tokens_dict = {'eotr_token': '<EOTR>', 'pad_token': '<PAD>'}
-    num_added_toks = tokenizer.add_special_tokens(special_tokens_dict)
     model.resize_token_embeddings(len(tokenizer))
 
     # Preprocessing the datasets.
