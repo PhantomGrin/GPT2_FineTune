@@ -42,7 +42,7 @@ from transformers import (
     default_data_collator,
     set_seed,
 )
-from transformers.trainer_utils import is_main_process
+#from transformers.trainer_utils import is_main_process
 
 
 logger = logging.getLogger(__name__)
@@ -157,7 +157,8 @@ def main():
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO if is_main_process(training_args.local_rank) else logging.WARN,
+#         level=logging.INFO if is_main_process(training_args.local_rank) else logging.WARN,
+        level=logging.INFO,
     )
 
     # Log on each process the small summary:
@@ -166,8 +167,8 @@ def main():
         + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
     # Set the verbosity to info of the Transformers logger (on main process only):
-    if is_main_process(training_args.local_rank):
-        transformers.utils.logging.set_verbosity_info()
+#     if is_main_process(training_args.local_rank):
+#         transformers.utils.logging.set_verbosity_info()
     logger.info("Training/evaluation parameters %s", training_args)
 
     # Set seed before initializing model.
