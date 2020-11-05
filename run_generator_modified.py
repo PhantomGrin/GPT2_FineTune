@@ -89,7 +89,7 @@ def prepare_ctrl_input(args, _, tokenizer, prompt_text):
     if args.temperature > 0.7:
         logger.info("CTRL typically works better with lower temperatures (and lower top_k).")
 
-    encoded_prompt = tokenizer.encode(prompt_text, add_special_tokens=True, return_tensors=”pt”)
+    encoded_prompt = tokenizer.encode(prompt_text, add_special_tokens=True)
     # encoded_prompt = tokenizer.encode(prompt_text, add_special_tokens=False)
     if not any(encoded_prompt[0] == x for x in tokenizer.control_codes.values()):
         logger.info("WARNING! You are not starting your generation from a control code so you won't get good results")
