@@ -328,6 +328,7 @@ def main():
 
         perplexity = math.exp(eval_output["eval_loss"])
         results["perplexity"] = perplexity
+        results["eval_loss"] = eval_output["eval_loss"]
 
         output_eval_file = os.path.join(training_args.output_dir, "eval_results_clm.txt")
         if trainer.is_world_process_zero():
