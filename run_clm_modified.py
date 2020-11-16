@@ -227,7 +227,7 @@ def main():
             "You can do it from another script, save it, and load it from here, using --tokenizer_name."
         )
     
-    special_tokens_dict = {'eos_token': '<EOTR>', 'pad_token': '<PAD>'}
+    special_tokens_dict = {'bos_token': '<BOS>', 'eos_token': '<EOS>', 'pad_token': '<PAD>'}
     tokenizer.add_special_tokens(special_tokens_dict)
     
     if model_args.model_name_or_path:
