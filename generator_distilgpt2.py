@@ -14,18 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Conditional text generation with the auto-regressive models of the library (GPT/GPT-2/CTRL/Transformer-XL/XLNet)
+""" Text generation using GPT2/DistilGPT2
 """
 
-
-import argparse
 import logging
-
-import numpy as np
 import torch
-
 from jsonmerge import merge
-
 from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 logging.basicConfig(
@@ -36,12 +30,26 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
+SEED = 42
+
+ARGS = {
+    'trigger_token':":",
+    'length': 20,
+    'stop_token': "",
+    'temperature': 1.0,
+    'k': 0,
+    'p': 0.9,
+    'num_return_sequences': 3,
+    'repetition_penalty': 1.0
+}
+
+MODEL_PATH = './model/Model_DistilGPT2'
 
 def set_seed(args):
-    np.random.seed(args['seed'])
-    torch.manual_seed(args['seed'])
+    global SEED
+    torch.manual_seed(SEED)
     if args['n_gpu'] > 0:
-        torch.cuda.manual_seed_all(args['seed'])
+        torch.cuda.manual_seed_all(SEED)
 
 
 def adjust_length_to_model(length, max_sequence_length):
@@ -53,41 +61,35 @@ def adjust_length_to_model(length, max_sequence_length):
         length = MAX_LENGTH  # avoid infinite loop
     return length
 
-ARGS = {
-    'trigger_token':":",
-    'length': 20,
-    'stop_token': "",
-    'temperature': 1.0,
-    'k': 0,
-    'p': 0.9,
-    'seed': 42,
-    'num_return_sequences': 3,
-    'repetition_penalty': 1.0
-}
 
-def service(input_json):
-    args = merge(ARGS, input_json)
-    print(args)
-    args['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    args['n_gpu'] = torch.cuda.device_count()
+def load_model():
+    ARGS['device'] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    ARGS['n_gpu'] = torch.cuda.device_count()
 
     logger.info(
         "device: %s, n_gpu: %s",
-        args['device'],
-        args['n_gpu']
+        ARGS['device'],
+        ARGS['n_gpu']
     )
 
-    set_seed(args)
+    set_seed(ARGS)
 
     # Initialize the model and tokenizer
     try:
         model_class, tokenizer_class = GPT2LMHeadModel, GPT2Tokenizer
+        tokenizer = tokenizer_class.from_pretrained(MODEL_PATH)
+        model = model_class.from_pretrained(MODEL_PATH)
+        model.to(ARGS['device'])
+        logger.info("Model loading completed")
     except KeyError:
         raise KeyError("There is an error loading model GPT2")
+ 
+    return model, tokenizer
 
-    tokenizer = tokenizer_class.from_pretrained('./Model_DistilGPT2')
-    model = model_class.from_pretrained('./Model_DistilGPT2')
-    model.to(args['device'])
+
+def service(input_json, model, tokenizer):
+    args = merge(ARGS, input_json)
+    print(args)
 
     args['length'] = adjust_length_to_model(args['length'], max_sequence_length=model.config.max_position_embeddings)
     logger.info(args)
